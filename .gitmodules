@@ -1,0 +1,6 @@
+[submodule "tdl"]
+	path = tdl
+	url = https://github.com/Farmata-sidibe/tdl.git
+[submodule "tdlApi"]
+	path = tdlApi
+	url = https://github.com/Farmata-sidibe/tdlApi.git
