@@ -1,0 +1,79 @@
+services:
+  mysql-db:
+    image: mysql:latest
+    container_name: tdl-db
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - 3306:3306
+    volumes:
+      - db_datas:/var/lib/mysql
+    restart: always
+    healthcheck:
+      # test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      # test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password= || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 90s
+
+  tdl-api:
+    build:
+      context: ./tdlApi
+      dockerfile: Dockerfile
+    container_name: tdl-api
+    ports:
+      - 8080:8080
+    volumes:
+      - ./tdl-api:/usr/src/app
+    env_file:
+      - .env
+    command: npm start
+    restart: always
+    extra_hosts:
+      - "tdl-api.local=127.0.0.1"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  tdl-app:
+    build:
+      context: ./tdl
+      dockerfile: Dockerfile
+    container_name: tdl-app
+    ports:
+      - 8000:8000
+    volumes:
+      - ./tdl:/var/www/html
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      tdl-api:
+        condition: service_healthy
+    env_file: 
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+    restart: always
+    extra_hosts:
+      - "tdl.test=127.0.0.1"    
+
+networks:
+  tdl-network:
+    driver: bridge
+
+volumes:
+  db_datas:
