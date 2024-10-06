@@ -2,6 +2,8 @@ services:
   mysql:
     image: mysql:latest
     container_name: tdl-db
+    networks:
+      - tdl-network
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
@@ -22,6 +24,8 @@ services:
       context: ./tdlApi
       dockerfile: Dockerfile
     container_name: tdl-api
+    networks:
+      - tdl-network
     ports:
       - 8081:8081
     volumes:
@@ -44,10 +48,13 @@ services:
       context: ./tdl
       dockerfile: Dockerfile
     container_name: tdl-app
+    networks:
+      - tdl-network
     ports:
       - 8000:8000
     volumes:
       - ./tdl:/var/www/html
+      - /var/www/html/node_modules
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,12 +63,13 @@ services:
     env_file: 
       - .env
     environment:
+      - APP_ENV=local
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_DATABASE=${MYSQL_DATABASE}
       - DB_USERNAME=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
-    command: bash -c "composer install && php artisan migrate && php artisan serve --host=0.0.0.0 --port=8000"
+    command: bash -c "composer install && php artisan migrate && npm run dev --host=0.0.0.0 --port=8000"
     restart: always
     extra_hosts:
       - "tdl.test=127.0.0.1"    
