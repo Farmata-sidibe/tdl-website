@@ -52,7 +52,7 @@ services:
       - tdl-network
     ports:
       - 8000:8000
-      - 5174:5174
+      - 5174:5174    # Pour Vite
     volumes:
       - ./tdl:/var/www/html
       #- /var/www/html/node_modules
@@ -70,10 +70,10 @@ services:
       - DB_DATABASE=${MYSQL_DATABASE}
       - DB_USERNAME=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
-    command: bash -c "composer install && php artisan migrate && php artisan serve --host=0.0.0.0 --port=8000"
+    command: bash -c "composer install && php artisan migrate && npm run dev --host=0.0.0.0 --port=8000"
     restart: always
     extra_hosts:
-      - "tdl-website.test=127.0.0.1"    
+      - "tdl.test=127.0.0.1"    
 
 networks:
   tdl-network:
