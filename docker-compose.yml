@@ -2,8 +2,6 @@ services:
   mysql:
     image: mysql:latest
     container_name: tdl-db
-    networks:
-      - tdl-network
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
@@ -18,6 +16,8 @@ services:
       timeout: 30s
       retries: 5
       start_period: 90s
+    networks:
+      - tdl-network
 
   tdl-api:
     build:
